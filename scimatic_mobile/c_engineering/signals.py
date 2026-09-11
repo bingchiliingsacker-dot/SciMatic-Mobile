@@ -1,5 +1,5 @@
 from typing import AsyncGenerator
-from scimatic import flicker_module
+from scimatic_mobile import flicker_module
 import time
 import asyncio
 import random
