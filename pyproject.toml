@@ -20,8 +20,9 @@ authors = [
 Repository = 'https://github.com/bingchiliingsacker-dot/SciMatic-Mobile'
 
 [tool.maturin]
-python-source = '.'
-module-name = 'scimatic_mobile.flicker_module'
-bindings = 'pyo3'
+python-source = "."
+module-name = "scimatic_mobile.flicker_module"
+bindings = "pyo3"
+features = ["pyo3/extension-module"]
 
 #------------------------------------------Th3Curs3dOn3------------------------------------------#
