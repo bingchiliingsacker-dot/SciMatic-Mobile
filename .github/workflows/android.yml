@@ -16,6 +16,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------------------------------------
+      # Python / Java
+      # ------------------------------------------------------------
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -27,11 +31,30 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # ------------------------------------------------------------
+      # Android SDK / NDK
+      # ------------------------------------------------------------
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android NDK
-        uses: android-actions/setup-android@v3
+      - name: Install pinned Android NDK
+        run: |
+          sdkmanager --install "ndk;27.0.12077973"
+
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+
+      - name: Verify Android toolchain
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
+
+          "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang" --version
+
+      # ------------------------------------------------------------
+      # Build dependencies
+      # ------------------------------------------------------------
 
       - name: Install build dependencies
         run: |
@@ -43,25 +66,112 @@ jobs:
         with:
           targets: aarch64-linux-android
 
-      - name: Set Android NDK environment
-        run: |
-          echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
+      # ------------------------------------------------------------
+      # Android linker
+      # ------------------------------------------------------------
 
       - name: Configure Android linker
         run: |
-          NDK="$ANDROID_NDK_HOME"
-          TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          TOOLCHAIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
 
-          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$TOOLCHAIN/aarch64-linux-android24-clang" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$TOOLCHAIN/aarch64-linux-android24-clang" >> "$GITHUB_ENV"
+
+      # ------------------------------------------------------------
+      # Build Android-targeted CPython
+      # ------------------------------------------------------------
+
+      - name: Checkout CPython source
+        run: |
+          git clone \
+            --depth 1 \
+            --branch v3.14.0 \
+            https://github.com/python/cpython.git \
+            cpython-src
+
+      - name: Build CPython for Android ARM64
+        working-directory: cpython-src/Android
+        run: |
+          ./android.py build aarch64-linux-android
+
+      # ------------------------------------------------------------
+      # Locate and verify Android libpython
+      # ------------------------------------------------------------
+
+      - name: Locate Android Python libraries
+        run: |
+          echo "Searching CPython build for Android Python libraries..."
+
+          find "${{ github.workspace }}/cpython-src" \
+            \( -name "libpython*.so" \
+            -o -name "libpython*.a" \
+            -o -name "python3-config" \) \
+            -print
+
+      - name: Verify expected CPython output
+        run: |
+          PYTHON_LIB_DIR="${{ github.workspace }}/cpython-src/cross-build/aarch64-linux-android/prefix/lib"
+
+          echo "Expected Python library directory:"
+          echo "$PYTHON_LIB_DIR"
+
+          if [ ! -d "$PYTHON_LIB_DIR" ]; then
+            echo "ERROR: CPython library directory does not exist."
+            exit 1
+          fi
+
+          echo
+          echo "Contents:"
+          ls -la "$PYTHON_LIB_DIR"
+
+          if ! find "$PYTHON_LIB_DIR" -maxdepth 1 \
+              \( -name "libpython*.so" -o -name "libpython*.a" \) \
+              -print -quit | grep -q .; then
+            echo
+            echo "ERROR: No libpython library was found."
+            exit 1
+          fi
+
+          echo
+          echo "Android libpython found successfully."
+
+      # ------------------------------------------------------------
+      # Configure PyO3 cross compilation
+      # ------------------------------------------------------------
+
+      - name: Configure PyO3 for Android CPython
+        run: |
+          echo "PYO3_CROSS_LIB_DIR=${{ github.workspace }}/cpython-src/cross-build/aarch64-linux-android/prefix/lib" >> "$GITHUB_ENV"
+          echo "PYO3_CROSS_PYTHON_VERSION=3.14" >> "$GITHUB_ENV"
+
+      - name: Show PyO3 configuration
+        run: |
+          echo "PYO3_CROSS_LIB_DIR=$PYO3_CROSS_LIB_DIR"
+          echo "PYO3_CROSS_PYTHON_VERSION=$PYO3_CROSS_PYTHON_VERSION"
+
+      # ------------------------------------------------------------
+      # Build SciMatic-Mobile
+      # ------------------------------------------------------------
 
       - name: Build Android ARM64 wheel
         run: |
           maturin build \
             --release \
-            --target aarch64-linux-android \
-            --compatibility off
+            --target aarch64-linux-android
 
-      - name: Upload Android wheel
+      # ------------------------------------------------------------
+      # Inspect resulting wheel
+      # ------------------------------------------------------------
+
+      - name: List generated wheels
+        run: |
+          echo "Generated wheels:"
+          ls -lh target/wheels/
+
+      # ------------------------------------------------------------
+      # Upload
+      # ------------------------------------------------------------
+
+      - name: Upload Android ARM64 wheel
         uses: actions/upload-artifact@v4
         with:
           name: scimatic-mobile-android-arm64
