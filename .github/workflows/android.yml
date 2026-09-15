@@ -79,6 +79,8 @@ jobs:
           echo "Using linker: $LINKER"
 
       - name: Build Android wheel
+        env:
+          PYO3_CROSS_LIB_DIR: ""
         run: |
           maturin build \
             --release \
