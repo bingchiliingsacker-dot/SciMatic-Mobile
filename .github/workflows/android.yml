@@ -1,124 +1,57 @@
-name: Build SciMatic Mobile (Android)
+name: Build Android Wheels
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   build-android:
-    name: Android (${{ matrix.target }})
     runs-on: ubuntu-latest
-
     strategy:
-      fail-fast: false
       matrix:
+        # Define Android target triples and their corresponding Python-friendly platform tags
         include:
           - target: aarch64-linux-android
-            api_level: 24
-            clang_prefix: aarch64-linux-android
-
+          - target: armv7-linux-androideabi
+          - target: i686-linux-android
           - target: x86_64-linux-android
-            api_level: 24
-            clang_prefix: x86_64-linux-android
-
-    env:
-      ANDROID_API_LEVEL: ${{ matrix.api_level }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source code
         uses: actions/checkout@v4
-
-      - name: Set up Android SDK
-        run: |
-          mkdir -p $HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          
-          # Download cmdline-tools
-          cd $HOME/android-sdk
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip -q commandlinetools-linux-9477386_latest.zip
-          rm commandlinetools-linux-9477386_latest.zip
-          
-          # Accept licenses
-          mkdir -p licenses
-          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131b33910" > licenses/intel-android-extra-license
-          echo "33b6a2b64607f11e59f6cff658ce7496bc0caea0" > licenses/google-android-extra-license
-          
-          # Set ANDROID_SDK_ROOT for subsequent steps
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-
-      - name: Install Android NDK
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT/ndk
-          cd $ANDROID_SDK_ROOT
-          
-          # Download NDK using correct URL format
-          wget https://dl.google.com/android/repository/android-ndk-r26.1-linux-x86_64.zip
-          unzip -q android-ndk-r26.1-linux-x86_64.zip
-          rm android-ndk-r26.1-linux-x86_64.zip
-          
-          # Move NDK to expected location
-          mv android-ndk-r26.1 ndk/
-          
-          # Set environment variables
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/android-ndk-r26.1" >> "$GITHUB_ENV"
-          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/android-ndk-r26.1" >> "$GITHUB_ENV"
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.11' # Match your target Python version
 
-      - name: Install Maturin
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install maturin
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-      - name: Configure Android linker
-        shell: bash
+      - name: Set up Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r26b # Ensure this aligns with your crate requirements
+          add-to-path: true
+
+      - name: Build Android Wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }}
         env:
-          TARGET: ${{ matrix.target }}
-          CLANG_PREFIX: ${{ matrix.clang_prefix }}
-          API_LEVEL: ${{ matrix.api_level }}
-        run: |
-          TOOLCHAIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          
-          # Convert target to uppercase with underscores
-          TARGET_UPPER=$(echo "$TARGET" | tr '[:lower:]-' '[:upper:]_')
-          LINKER_VAR="CARGO_TARGET_${TARGET_UPPER}_LINKER"
-          
-          LINKER="$TOOLCHAIN/${CLANG_PREFIX}${API_LEVEL}-clang"
-          
-          if [ ! -x "$LINKER" ]; then
-            echo "Android linker not found:"
-            echo "$LINKER"
-            exit 1
-          fi
-          
-          echo "$LINKER_VAR=$LINKER" >> "$GITHUB_ENV"
-          
-          echo "Using Android API level: $ANDROID_API_LEVEL"
-          echo "Using linker: $LINKER"
+          # Required environment variables so Rust can find the Android NDK cross-compilers
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
-      - name: Build Android wheel
-        run: |
-          maturin build \
-            --release \
-            --target "${{ matrix.target }}"
-
-      - name: Upload Android wheel
+      - name: Upload Wheels as Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: scimatic-android-${{ matrix.target }}
+          name: wheels-android-${{ matrix.target }}
           path: target/wheels/*.whl
-          if-no-files-found: error
