@@ -2,23 +2,15 @@ name: Build Android Wheels
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ['v*']
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Define Android target triples and their corresponding Python-friendly platform tags
-        include:
-          - target: aarch64-linux-android
-          - target: armv7-linux-androideabi
-          - target: i686-linux-android
-          - target: x86_64-linux-android
 
     steps:
       - name: Checkout source code
@@ -27,31 +19,30 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Match your target Python version
+          python-version: '3.11'
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: aarch64-linux-android
 
       - name: Set up Android NDK
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
-          ndk-version: r26b # Ensure this aligns with your crate requirements
+          ndk-version: r26b
           add-to-path: true
 
       - name: Build Android Wheel
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --target ${{ matrix.target }}
+          args: --release --target aarch64-linux-android
         env:
-          # Required environment variables so Rust can find the Android NDK cross-compilers
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
       - name: Upload Wheels as Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-android-${{ matrix.target }}
+          name: wheels-android-aarch64
           path: target/wheels/*.whl
