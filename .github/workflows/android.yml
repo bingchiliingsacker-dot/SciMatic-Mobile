@@ -34,12 +34,10 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
-        with:
-          packages: ""
 
       - name: Install Android NDK
         run: |
-          sdkmanager --install "ndk;26.1.10909125"
+          sdkmanager "ndk;26.1.10909125"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> "$GITHUB_ENV"
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> "$GITHUB_ENV"
 
@@ -60,27 +58,31 @@ jobs:
 
       - name: Configure Android linker
         shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          CLANG_PREFIX: ${{ matrix.clang_prefix }}
+          API_LEVEL: ${{ matrix.api_level }}
         run: |
           TOOLCHAIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
-
-          LINKER_VAR="CARGO_TARGET_$(echo '${{ matrix.target }}' | tr '[:lower:]-' '[:upper:]_')_LINKER"
-
-          LINKER="$TOOLCHAIN/${{ matrix.clang_prefix }}${{ matrix.api_level }}-clang"
-
+          
+          # Convert target to uppercase with underscores
+          TARGET_UPPER=$(echo "$TARGET" | tr '[:lower:]-' '[:upper:]_')
+          LINKER_VAR="CARGO_TARGET_${TARGET_UPPER}_LINKER"
+          
+          LINKER="$TOOLCHAIN/${CLANG_PREFIX}${API_LEVEL}-clang"
+          
           if [ ! -x "$LINKER" ]; then
             echo "Android linker not found:"
             echo "$LINKER"
             exit 1
           fi
-
+          
           echo "$LINKER_VAR=$LINKER" >> "$GITHUB_ENV"
-
+          
           echo "Using Android API level: $ANDROID_API_LEVEL"
           echo "Using linker: $LINKER"
 
       - name: Build Android wheel
-        env:
-          PYO3_CROSS_LIB_DIR: ""
         run: |
           maturin build \
             --release \
