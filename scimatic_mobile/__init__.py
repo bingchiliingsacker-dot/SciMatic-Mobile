@@ -5,6 +5,6 @@ mathematics, science calculations,
 and experimental functions.
 '''
 
-__version__ = '1.2.4'
+__version__ = '1.2.5'
 __author__ = 'Th3Curs3dOn3'
 __license__ = 'MIT'
