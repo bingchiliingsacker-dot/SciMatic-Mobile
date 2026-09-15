@@ -1,4 +1,4 @@
-name: Build Android Package
+name: Build SciMatic Mobile (Android)
 
 on:
   release:
@@ -10,192 +10,77 @@ permissions:
 
 jobs:
   build-android:
+    name: Android (${{ matrix.target }})
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-linux-android
+            api_level: 24
+            clang_prefix: aarch64-linux-android
+
+          - target: x86_64-linux-android
+            api_level: 24
+            clang_prefix: x86_64-linux-android
+
+    env:
+      ANDROID_API_LEVEL: ${{ matrix.api_level }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ------------------------------------------------------------
-      # Python / Java
-      # ------------------------------------------------------------
+      - name: Set up Android NDK
+        uses: nsetup/setup-android-ndk@v3
+        with:
+          ndk-version: r26b
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.12"
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      # ------------------------------------------------------------
-      # Android SDK / NDK
-      # ------------------------------------------------------------
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install pinned Android NDK
-        run: |
-          sdkmanager --install "ndk;27.0.12077973"
-
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> "$GITHUB_ENV"
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
-
-      - name: Verify Android toolchain
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
-
-          "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang" --version
-
-      # ------------------------------------------------------------
-      # Build dependencies
-      # ------------------------------------------------------------
-
-      - name: Install build dependencies
+      - name: Install Maturin
         run: |
           python -m pip install --upgrade pip
           python -m pip install maturin
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android
-
-      # ------------------------------------------------------------
-      # Android linker
-      # ------------------------------------------------------------
-
       - name: Configure Android linker
+        shell: bash
         run: |
           TOOLCHAIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
 
-          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$TOOLCHAIN/aarch64-linux-android24-clang" >> "$GITHUB_ENV"
+          LINKER_VAR="CARGO_TARGET_$(echo '${{ matrix.target }}' | tr '[:lower:]-' '[:upper:]_')_LINKER"
 
-      # ------------------------------------------------------------
-      # Build Android-targeted CPython
-      # ------------------------------------------------------------
+          LINKER="$TOOLCHAIN/${{ matrix.clang_prefix }}${{ matrix.api_level }}-clang"
 
-      - name: Checkout CPython source
-        run: |
-          git clone \
-            --depth 1 \
-            --branch v3.14.0 \
-            https://github.com/python/cpython.git \
-            cpython-src
-
-      - name: Build CPython for Android ARM64
-        working-directory: cpython-src/Android
-        run: |
-          ./android.py build aarch64-linux-android
-
-      # ------------------------------------------------------------
-      # Locate and verify Android libpython
-      # ------------------------------------------------------------
-
-      - name: Locate Android Python libraries
-        run: |
-          echo "Searching CPython build for Android Python libraries..."
-
-          find "${{ github.workspace }}/cpython-src" \
-            \( -name "libpython*.so" \
-            -o -name "libpython*.a" \
-            -o -name "python3-config" \) \
-            -print
-
-      - name: Verify expected CPython output
-        run: |
-          PYTHON_LIB_DIR="${{ github.workspace }}/cpython-src/cross-build/aarch64-linux-android/prefix/lib"
-
-          echo "Expected Python library directory:"
-          echo "$PYTHON_LIB_DIR"
-
-          if [ ! -d "$PYTHON_LIB_DIR" ]; then
-            echo "ERROR: CPython library directory does not exist."
+          if [ ! -x "$LINKER" ]; then
+            echo "Android linker not found:"
+            echo "$LINKER"
             exit 1
           fi
 
-          echo
-          echo "Contents:"
-          ls -la "$PYTHON_LIB_DIR"
+          echo "$LINKER_VAR=$LINKER" >> "$GITHUB_ENV"
 
-          if ! find "$PYTHON_LIB_DIR" -maxdepth 1 \
-              \( -name "libpython*.so" -o -name "libpython*.a" \) \
-              -print -quit | grep -q .; then
-            echo
-            echo "ERROR: No libpython library was found."
-            exit 1
-          fi
+          echo "Using Android API level: $ANDROID_API_LEVEL"
+          echo "Using linker: $LINKER"
 
-          echo
-          echo "Android libpython found successfully."
-
-      # ------------------------------------------------------------
-      # Configure PyO3 cross compilation
-      # ------------------------------------------------------------
-
-      - name: Configure PyO3 for Android CPython
-        run: |
-          echo "PYO3_CROSS_LIB_DIR=${{ github.workspace }}/cpython-src/cross-build/aarch64-linux-android/prefix/lib" >> "$GITHUB_ENV"
-          echo "PYO3_CROSS_PYTHON_VERSION=3.14" >> "$GITHUB_ENV"
-
-      - name: Show PyO3 configuration
-        run: |
-          echo "PYO3_CROSS_LIB_DIR=$PYO3_CROSS_LIB_DIR"
-          echo "PYO3_CROSS_PYTHON_VERSION=$PYO3_CROSS_PYTHON_VERSION"
-
-      # ------------------------------------------------------------
-      # Build SciMatic-Mobile
-      # ------------------------------------------------------------
-
-      - name: Build Android ARM64 wheel
+      - name: Build Android wheel
         run: |
           maturin build \
             --release \
-            --target aarch64-linux-android
+            --target "${{ matrix.target }}"
 
-      # ------------------------------------------------------------
-      # Inspect resulting wheel
-      # ------------------------------------------------------------
-
-      - name: List generated wheels
-        run: |
-          echo "Generated wheels:"
-          ls -lh target/wheels/
-
-      # ------------------------------------------------------------
-      # Upload
-      # ------------------------------------------------------------
-
-      - name: Upload Android ARM64 wheel
+      - name: Upload Android wheel
         uses: actions/upload-artifact@v4
         with:
-          name: scimatic-mobile-android-arm64
-          path: target/wheels/
-  pypi-publish:
-    runs-on: ubuntu-latest
-
-    needs:
-      - build-android
-
-    permissions:
-      id-token: write
-
-    environment:
-      name: pypi
-
-    steps:
-      - name: Download Android wheel
-        uses: actions/download-artifact@v4
-        with:
-          name: scimatic-mobile-android-arm64
-          path: dist/
-
-      - name: Publish Android wheel to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/
+          name: scimatic-android-${{ matrix.target }}
+          path: target/wheels/*.whl
+          if-no-files-found: error
