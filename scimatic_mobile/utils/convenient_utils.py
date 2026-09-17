@@ -22,16 +22,18 @@ Operator = Literal['+', '-', '×', '•', '*', '^', '÷', '/', '//', '%', '!', '
 class CreateParsable:
         def __init__(self, syntax):
                 self.syntax = syntax
-
-        def parse_letter(self) -> list[str]:
+        def parse_letter(self, print_result=False) -> list[str]:
                 output = []
                 for s in self.syntax:
                         if s == ' ':
                                 continue
                         output.append(s)
+                        
+                if print_result:
+                	print(output)
                 return output
 
-        def parse_word(self) -> list[str]:
+        def parse_word(self, print_result=False) -> list[str]:
                 output = []
                 word = ''
 
@@ -41,18 +43,17 @@ class CreateParsable:
                                         output.append(word)
                                         word = ''
                                 continue
-
+                                
                         word += s
-
                 output.append(word)
-
+                
+                if print_result:
+                	print(output)
                 return output
-
-        def parse_token(self) -> list:
+        def parse_token(self, print_result=False) -> list:
                 output = []
                 word = ''
                 s = self.syntax
-
                 def flush():
                         nonlocal word
                         if word:
@@ -64,7 +65,6 @@ class CreateParsable:
                                         except ValueError:
                                                 output.append(word)
                         word = ''
-
                 i = 0
                 while i < len(s):
                         ch = s[i]
@@ -72,9 +72,23 @@ class CreateParsable:
                                 flush()
                                 i += 1
                                 continue
+                        if ch == '-' and i + 1 < len(s):
+                        	next_char = s[i:i + 1]
+                        	if (
+                        		next_char.isdigit() or
+                        		next_char == '-'
+                        	) and (
+                        		not output or
+                        		(isinstance(output[-1], str) and
+                        		output[-1] in '()+-*/%')
+                        	):
+                        		
+                        		word += ch
+                        		i += 1
+                        		continue
                         if ch in '()+-*/%':
-                                flush()
-                                if s[i:i+2] in ('**', '//'):
+                                ch = s[i]
+                                if s[i:i + 2] in ('**', '//'):
                                         output.append(s[i:i+2])
                                         i += 2
                                 else:
@@ -83,8 +97,10 @@ class CreateParsable:
                                 continue
                         word += ch
                         i += 1
-
                 flush()
+                
+                if print_result:
+                	print(output)
                 return output
 
 def calculate(
