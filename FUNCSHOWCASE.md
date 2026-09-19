@@ -76,7 +76,7 @@ import scimatic.mathematic.algebra.pythagorean_theorem as pythagorean_theorem
 pythagorean_theorem(1, 7, 3, print_result=True)
 pythagorean_theorem(1, 7, print_result=True)
 # Output: 3^2 = 1^2 + 7^2
-#                                                                        False
+#									False
 # Output: sqrt(1^2 + 7^2) = 5sqrt(2) or 7.071
 ```
 
@@ -111,6 +111,24 @@ import scimatic.mathematic.statistics.median as median
 
 median([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], print_result=True)
 # Output: 6.0
+```
+
+```mean(raw_data, print_result=False)```
+```python
+from scimatic.mathematic.statistics import mean
+
+mean([1, 1, 2, 2, 3], print_result=True)
+
+# Output: 2.2
+```
+
+```mode(raw_data, k=1, print_result=False)```
+```python
+from scimatic.mathematic.statistics import mode
+
+mode([2, 3, 3, 3, 4, 4, 5], k=2, print_result=True)
+
+# Output: [3, 4]
 ```
 • Note: Statistical Functions can have an unsorted input and the same result applies
 
@@ -154,20 +172,20 @@ import scimatic.mathematic.niche.fibonacci as fibonacci
 fib = fibonacci(10)
 
 for value in fib:
-                print(value)
-
+		print(value)
+		
 # Output: 
-#                0
-#                1
-#                1
-#                2
-#                3
-#                5
-#                8
-#                13
-#                21
-#                34
-#                55
+#		0
+#		1
+#		1
+#		2
+#		3
+#		5
+#		8
+#		13
+#		21
+#		34
+#		55
 ```
 
 ```collatz(n, print_result=False)```
@@ -241,16 +259,16 @@ print(AND(True, False, binary=True))
 print(AND(1, 0))
 
 # Output(True, True):
-#                True
-#                1
-#                1
-#                True
+#		True
+#		1
+#		1
+#		True
 
 # Output(True, False):
-#                False
-#                0
-#                0
-#                False
+#		False
+#		0
+#		0
+#		False
 ```
 
 ```NOT(value, binary=False)```
@@ -395,22 +413,22 @@ print(full_adder(1, 1, 1))
 
 • Note: As of 1.40.0, the 3 functions below strictly need a list of booleans, I am working on a fix to this issue as soon as possible.
 
-```flick_once(digits, binary=False)```
+```flick(digits, binary=False, print_result=False)```
 ```python
-from scimatic.c_engineering.signals import flick_once
+from scimatic import flick
 
-print(flick_once([True, False, True, True]))
+flick([True, False, True, True], print_result=True)
 
 # Output: [False, True, False, False]
 ```
 • Note: The function processes the supplied signal and produces a flickering signal.
 
-```delay(digits, duration, binary=False)```
+```delay(digits, duration, binary=False, print_result=False)```
 ```python
 from scimatic.c_engineering.signals import delay
 import asyncio
 
-print(asyncio.run(delay([True, False, True], 1)))
+asyncio.run(delay([True, False, True], 1, print_result=True))
 
 # Output: -1s-> [False, True, False]
 ```
@@ -422,8 +440,8 @@ from scimatic.c_engineering.signals import pulse
 import asyncio
 
 async def main():
-                async for p in pulse([True, False, True], 3, 0.5):
-                                print(p)
+		async for p in pulse([True, False, True], 3, 0.5):
+				print(p)
 asyncio.run(main())
 
 # Output: [False, True, False] -0.5s-> [True, False, True] -0.5-> [False, True, False]
@@ -481,7 +499,7 @@ print(syntax.parse_token()) # parses per word and converts numbers into integers
 from scimatic.utils.convenient_utils import Operator
 
 def addition_op() -> Operator:
-                return '+'
+		return '+'
 print(addition_op)
 
 # Output: +
@@ -520,20 +538,21 @@ print(int64_limit(unsigned=True) # if negative_value is True, 0
 # Output: 9,223,372,036,854,775,807
 # Output: 18,446,744,073,709,551,615
 ```
+- Theres also an int32, int16, and int8 limit but their parameters are the same, only difference is the naming.
 
-```pi(decimal=None)```
+```pi(decimal=None, print_result=True)```
 
 ```python
 from scimatic.utils.convenient_utils import pi
 
-print(pi())
-print(pi(2))
+pi(print_result=True)
+pi(2, print_result=True)
 
 # Output: 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
 # Output: 3.14
 ```
 
-### databasing.py(new addition)
+### databasing.py
 ```Database()```
 - The class that contains all of ```databasing.py```'s functions
 - This class uses an sqlite3 database file(redirected to users application data directory to prevent PermissionError)
@@ -549,10 +568,10 @@ db = Database()
 
 @db.store
 def add(a, b):
-                return a + b
+		return a + b
 @db.store
 def mul(a, b):
-                return a * b
+		return a * b
 
 add(6, 7)
 mul(2, 2)
@@ -571,8 +590,8 @@ db = Database()
 db.get_one(print_result=True)
 db.get_one(1, print_result=True)
 
-# Output: ID: 2                                Date stored: mm/dd/yyyy                                Function: mul                                Return Value: 4                                Version: 1.4.0
-# Output: ID: 1                                Date stored: mm/dd/yyyy                                Function: add                                Return Value: 13                                Version: 1.4.0
+# Output: ID: 2				Date stored: mm/dd/yyyy				Function: mul				Return Value: 4				Version: 1.4.0
+# Output: ID: 1				Date stored: mm/dd/yyyy				Function: add				Return Value: 13				Version: 1.4.0
 ```
 - If the id parameter is None it gets the most recently added value
 
@@ -584,8 +603,8 @@ db = Database()
 
 db.get_all(print_result=True)
 
-# Output: ID: 1                                Date stored: mm/dd/yyyy                                Function: add                         Return Value: 13                                Version: 1.4.0
-#                                                          ID: 2                                Date stored: mm/dd/yyyy                                Function: mul                                Return Value: 4                                Version: 1.4.0
+# Output: ID: 1				Date stored: mm/dd/yyyy				Function: add 			Return Value: 13				Version: 1.4.0
+# 							 ID: 2				Date stored: mm/dd/yyyy				Function: mul				Return Value: 4				Version: 1.4.0
 ```
 
 ```db.delete(id=None, print_result=False)```
@@ -611,3 +630,67 @@ db.reset(print_result=True)
 # Output: Database reset successfully.
 ```
 - Warning: reset() deletes everything inside data.db
+
+## conversion/
+
+### - measurements.py
+```convert_len(n, u_sym1, u_sym2, print_result=False)```
+```python
+from scimatic.utils.conversion.measurements import convert_len
+
+convert_len(1, 'in', 'm', print_result=True)
+
+# Output: 1in -> 0.0254m
+```
+
+```convert_area(n, u_sym1, u_sym2, print_result=False)```
+```python
+from scimatic.utils.conversion.measurements import convert_area
+
+convert_area(1, 'in2', 'm2', print_result=True)
+
+# Output: 1in2 -> 0.00064516m2
+```
+
+### - time.py
+```convert_time(t, t_sym1, t_sym2, print_result=False)```
+```python
+from scimatic.utils.conversion.time import convert_time
+
+convert_time(1, 's', 'ms', print_result=True)
+
+# Output: 1s -> 1000ms
+```
+
+### - data.py
+```convert_bits(b, b_sym1, b_sym2, print_result=False)```
+```python
+from scimatic.utils.conversion.data import convert_bits
+
+convert_bits(1, 'b', 'B', print_result=True)
+
+# Output: 1b -> 0.125B
+```
+
+### - weight.py
+```convert_weight(w, w_sym1, w_sym2, print_result=False```
+```python
+from scimatic.utils.conversion.weight import convert_weight
+
+convert_weight(1, 'kg', 'g', print_result=True)
+
+# Output: 1kg -> 1000g
+```
+
+### - currency.py
+- This one is the elephant in the room, it requires internet as it needs to use [frankfurter](https://frankfurter.dev/)(a website that documents 205 currencies rate of change).
+- Good thing I created an offline mode just for y'all(my non-existent users) which stores the rate of change in... you guessed it, sqlite3.
+
+```fresh_convert_curr(money, curr1, curr2, id=None, save_offline=True, use_offline_db=False, reset_db=False, print_result=False)```
+```python
+from scimatic.utils.conversion.currency import fresh_convert_curr
+
+fresh_convert_curr(1, 'USD', 'PHP', print_result=True) # The result will store in the database
+
+# Output: 1USD -> around 62PHP as of 2026
+```
