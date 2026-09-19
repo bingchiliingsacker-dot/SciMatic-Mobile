@@ -183,7 +183,9 @@ SciMatic/
 ├──LICENSE
 |
 ├── src/
-|   └── lib.rs
+|   ├── lib.rs
+|   ├── flipper.rs
+|   └── b2b_translator.rs
 |
 └── scimatic/
     |
@@ -191,7 +193,18 @@ SciMatic/
     |
     ├── __init__.py
     |
-    ├── convenient_utils.py
+    ├── utils/
+    |    ├── __init__.py
+    |    ├── databasing.py
+    |    ├── convenient_utils.py
+    |    └── conversion/
+    |        ├── __init__.py
+    |        ├── currency.py
+    |        ├── data.py
+    |        ├── measurements.py
+    |        ├── time.py
+    |        ├── temperature.py
+    |        └── weight.py
     |
     ├── c_engineering/
     |   ├── __init__.py
