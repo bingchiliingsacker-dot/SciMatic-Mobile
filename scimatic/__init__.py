@@ -1,3 +1,5 @@
+from .rs_scimatic import flicker, conversion
+
 '''
 SciMatic
 A lightweight Python library for
@@ -5,6 +7,6 @@ mathematics, science calculations,
 and experimental functions.
 '''
 
-__version__ = '1.4.2'
+__version__ = '1.4.3'
 __author__ = 'Th3Curs3dOn3'
 __license__ = 'MIT'
