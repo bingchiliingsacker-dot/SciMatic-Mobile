@@ -36,19 +36,11 @@ jobs:
           ndk-version: r26b
           add-to-path: true
 
-      - name: Build flicker Android Wheel
+      - name: Build scimatic Android Wheel
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --target aarch64-linux-android --manifest-path flicker/Cargo.toml
-        env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-
-      - name: Build rs_converters Android Wheel
-        uses: PyO3/maturin-action@v1
-        with:
-          command: build
-          args: --release --target aarch64-linux-android --manifest-path rs_converters/Cargo.toml
+          args: --release --target aarch64-linux-android --manifest-path scimatic/Cargo.toml
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
