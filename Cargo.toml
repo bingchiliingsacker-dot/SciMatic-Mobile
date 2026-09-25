@@ -3,7 +3,8 @@
 [workspace]
 members = [
 	'flicker',
-	'rs_converters'
+	'rs_converters',
+	'rs_scimatic'
 ]
 resolver = '2'
 
