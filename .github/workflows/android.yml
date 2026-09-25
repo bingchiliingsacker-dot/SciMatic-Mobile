@@ -40,7 +40,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --target aarch64-linux-android --manifest-path Cargo.toml
+          args: --release --target aarch64-linux-android --manifest-path rs_scimatic/Cargo.toml
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
