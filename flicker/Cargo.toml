@@ -7,7 +7,7 @@ edition = '2021'
 
 [lib]
 name = 'flicker_module'
-crate-type = ['cdylib']
+crate-type = ['rlib']
 
 [dependencies]
 pyo3.workspace = true
