@@ -3,7 +3,7 @@
 [workspace]
 members = [
 	'flicker',
-	'conversion'
+	'rs_converters'
 ]
 resolver = '2'
 
