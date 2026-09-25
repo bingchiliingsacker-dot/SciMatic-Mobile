@@ -1,12 +1,12 @@
 #------------------------------------------Cargo.toml------------------------------------------#
 
 [package]
-name = 'flicker'
-version = '1.0.2'
+name = 'flicker_module'
+version = '1.1.0'
 edition = '2021'
 
 [lib]
-name = 'flicker'
+name = 'flicker_module'
 crate-type = ['cdylib']
 
 [dependencies]
