@@ -1,0 +1,13 @@
+#------------------------------------------Cargo.toml------------------------------------------#
+
+[workspace]
+members = [
+	'flicker',
+	'rs_converters'
+]
+resolver = '2'
+
+[workspace.dependencies]
+pyo3 = { version = '0.29.2', features = ['extension-module'] }
+
+#------------------------------------------Th3Curs3dOn3------------------------------------------#
