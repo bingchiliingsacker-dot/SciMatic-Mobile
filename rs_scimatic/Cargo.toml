@@ -1,0 +1,8 @@
+[package]
+name = "scimatic"
+version = "1.4.2"
+edition = "2021"
+
+[lib]
+name = "scimatic"
+crate-type = ["cdylib"]
