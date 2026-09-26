@@ -1,10 +1,10 @@
 [package]
-name = "scimatic"
-version = "1.4.9"
+name = "rs_scimatic"
+version = "1.4.10"
 edition = "2021"
 
 [lib]
-name = "scimatic"
+name = "rs_scimatic"
 crate-type = ["cdylib"]
 
 [dependencies]
