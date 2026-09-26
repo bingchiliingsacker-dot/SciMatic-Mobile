@@ -1,6 +1,6 @@
 [package]
 name = "scimatic"
-version = "1.4.8"
+version = "1.4.9"
 edition = "2021"
 
 [lib]
