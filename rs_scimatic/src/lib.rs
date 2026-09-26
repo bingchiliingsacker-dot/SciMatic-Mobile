@@ -1,4 +1,6 @@
 use pyo3::prelude::*;
+use flicker_module;
+use rs_converters;
 
 #[pymodule]
 fn scimatic(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
