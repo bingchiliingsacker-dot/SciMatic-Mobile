@@ -1,4 +1,4 @@
-from .rs_scimatic import flicker, conversion
+from .scimatic import flicker, conversion
 
 '''
 SciMatic
