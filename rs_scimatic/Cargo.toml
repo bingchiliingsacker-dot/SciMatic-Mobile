@@ -9,5 +9,3 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3.workspace = true
-flicker_module = { path = "../flicker" }
-rs_converters = { path = "../rs_converters" }
