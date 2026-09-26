@@ -1,4 +1,7 @@
-from .rs_scimatic import flicker, conversion
+from . import rs_scimatic
+
+flicker = rs_scimatic.flicker
+conversion = rs_scimatic.conversion
 
 '''
 SciMatic
@@ -7,6 +10,6 @@ mathematics, science calculations,
 and experimental functions.
 '''
 
-__version__ = '1.4.9'
+__version__ = '1.4.10'
 __author__ = 'Th3Curs3dOn3'
 __license__ = 'MIT'
