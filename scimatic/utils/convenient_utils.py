@@ -81,88 +81,88 @@ class CreateParsable:
 
         return output
 
-    def parse_token(self, print_result=False) -> list:
-                output = []
-                word = ''
-                s = self.syntax
-
-                def flush():
-                    nonlocal word
-
-                    if word:
-                        try:
-                            output.append(int(word))
-                        except ValueError:
-                            try:
-                                output.append(float(word))
-                            except ValueError:
-                                output.append(word)
-
-                    word = ''
-
-                i = 0
-
-                while i < len(s):
-                    ch = s[i]
-
-                    if ch == ' ':
-                        flush()
-                        i += 1
-                        continue
-
-                    if ch == '-' and i + 1 < len(s):
-                        next_char = s[i + 1]
-
-                        if (
-                            next_char.isdigit()
-                            or next_char == '-'
-                        ) and (
-                                not word
-                                and (
-                                    not output
-                                    or (
-                                        isinstance(output[-1], str)
-                                        and output[-1] in '()+-*/%'
-                                    )
-                                )
-                        ):
-                            word += ch
-                            i += 1
-                            continue
-
-                    if ch in '()+-*/%':
-                        flush()
-
-                        if s[i:i + 2] in ('**', '//'):
-                            output.append(s[i:i + 2])
-                            i += 2
-                        else:
-                            output.append(ch)
-                            i += 1
-
-                        continue
-
-                    word += ch
-                    i += 1
-
-                flush()
-
-                i = 0
-
-                while i < len(output) - 1:
-                    if (
-                        isinstance(output[i], (int, float))
-                        and output[i] < 0
-                        and output[i + 1] == '**'
-                    ):
-                        output[i:i + 1] = ['-', abs(output[i])]
-
-                    i += 1
-
-                if print_result:
-                    print(output)
-
-                return output
+    def parse_token(self, print_result=False, split_on='') -> list:
+        	output = []
+        	word = ''
+	        s = self.syntax
+	
+	        def flush():
+	            nonlocal word
+	
+	            if word:
+	                try:
+	                    output.append(int(word))
+	                except ValueError:
+	                    try:
+	                        output.append(float(word))
+	                    except ValueError:
+	                        output.append(word)
+	
+	            word = ''
+	
+	        i = 0
+	
+	        while i < len(s):
+	            ch = s[i]
+	
+	            if ch == split_on:
+	                flush()
+	                i += 1
+	                continue
+	
+	            if ch == '-' and i + 1 < len(s):
+	                next_char = s[i + 1]
+	
+	                if (
+	                    next_char.isdigit()
+	                    or next_char == '-'
+	                ) and (
+	                	not word
+	                	and (
+		                    not output
+		                    or (
+		                        isinstance(output[-1], str)
+		                        and output[-1] in '()+-*/%'
+		                    )
+		                )
+	                ):
+	                    word += ch
+	                    i += 1
+	                    continue
+	
+	            if ch in '()+-*/%':
+	                flush()
+	
+	                if s[i:i + 2] in ('**', '//'):
+	                    output.append(s[i:i + 2])
+	                    i += 2
+	                else:
+	                    output.append(ch)
+	                    i += 1
+	
+	                continue
+	
+	            word += ch
+	            i += 1
+	
+	        flush()
+	
+	        i = 0
+	
+	        while i < len(output) - 1:
+	            if (
+	                isinstance(output[i], (int, float))
+	                and output[i] < 0
+	                and output[i + 1] == '**'
+	            ):
+	                output[i:i + 1] = ['-', abs(output[i])]
+	
+	            i += 1
+	
+	        if print_result:
+	            print(output)
+	
+	        return output
 
     def parse_kwargs(
             self,
@@ -346,7 +346,7 @@ def calculate(
             left_token = processor[index - 1]
             right_token = processor[index + 1]
             operator = processor[index]
-
+            
             if operator == '-' and index == 0:
                 right_token = processor[index + 1]
                 result = -right_token
@@ -475,12 +475,12 @@ def calculate(
                 and x.isalpha()
                 for x in expression
             ):
-                    raise ValueError('String found in expression.')
+            	raise ValueError('String found in expression.')
         while '(' in processor:
             stack = []
-
+            
             if ')' not in processor:
-                    raise ValueError
+            	raise ValueError
 
             for i, tok in enumerate(processor):
                 if tok == '(':
@@ -516,7 +516,7 @@ def calculate(
                 print(
                     '💡 Tip: If you want parentheses you must open them. I am sure you were taught this in school.'
                 )
-
+                
             elif expression[-1] in operator or expression[0] in operator:
                 print('☝️ Reason: Expected number, got OperatorType.')
                 print(
@@ -534,11 +534,11 @@ def calculate(
                     '💡 Tip: calculate() only supports numerical expressions. Remove variables or use an algebra-capable function.'
                 )
             elif any(
-                    x in ['[', ']', '{', '}']
-                    for x in expression
+            	x in ['[', ']', '{', '}']
+            	for x in expression
             ):
                 print(
-                        '☝️ Reason: Brackets and Braces are not supported.'
+                	'☝️ Reason: Brackets and Braces are not supported.'
                 )
                 print(
                     '💡 Tip: Use Parentheses instead of Brackets and Braces.'
@@ -551,33 +551,33 @@ def calculate(
     return output
 #---------------FACTORIAL---------------#
 def factorial(
-        n: int,
-        print_result: bool = False
+	n: int,
+	print_result: bool = False
 ) -> int | None:
 
-        if n < 0:
-                if print_result:
-                        print(None)
-                return
-
-        if n == 0:
-                if print_result:
-                        print(1)
-                return 1
-
-        processor = [i for i in range(n + 1) if i != 0]
-        output = []
-
-        for integer in processor:
-                if len(output) == 1:
-                        integer *= output[0]
-                        output = []
-
-                output.append(integer)
-
-        if print_result:
-                print(max(output))
-        return max(output)
+	if n < 0:
+		if print_result:
+			print(None)
+		return
+	
+	if n == 0:
+		if print_result:
+			print(1)
+		return 1
+	
+	processor = [i for i in range(n + 1) if i != 0]
+	output = []
+	
+	for integer in processor:
+		if len(output) == 1:
+			integer *= output[0]
+			output = []
+			
+		output.append(integer)
+	
+	if print_result:
+		print(max(output))
+	return max(output)
 
 #---------------SPECIAL VALUES---------------#
 def int64_limit(
@@ -591,9 +591,9 @@ def int64_limit(
 
         else:
                 output = 2**63 - 1 if not negative_value else -2**63
-
+        
         if print_result:
-                print(output)
+        	print(output)
         return output
 
 def int32_limit(
@@ -607,9 +607,9 @@ def int32_limit(
 
         else:
                 output = 2**31 - 1 if not negative_value else -2**31
-
+        
         if print_result:
-                print(output)
+        	print(output)
         return output
 
 def int16_limit(
@@ -623,9 +623,9 @@ def int16_limit(
 
         else:
                 output = 2**15 - 1 if not negative_value else -2**15
-
+        
         if print_result:
-                print(output)
+        	print(output)
         return output
 
 def int8_limit(
@@ -639,9 +639,9 @@ def int8_limit(
 
         else:
                 output = 2**7 - 1 if not negative_value else -2**7
-
+        
         if print_result:
-                print(output)
+        	print(output)
         return output
 
 def pi(
