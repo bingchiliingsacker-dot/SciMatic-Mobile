@@ -51,8 +51,8 @@ For example:
 
 ```python
 matrix = [
-        [1, 2, 3],
-        [4, 5, 6]
+	[1, 2, 3],
+	[4, 5, 6]
 ]
 ```
 - In this example, the matrix contains 2 rows and 3 columns.
@@ -341,21 +341,21 @@ csv1 = CSV('PunnettSquareABO.csv')
 csv2 = CSV('PunnettSquare.csv')
 
 csv1.serialize(
-        [
-                ['', 'I^A', 'i'],
-                ['I^B', '', ''],
-                ['i', '', ''],
-        ],
-        write_to_file=True
+	[
+		['', 'I^A', 'i'],
+		['I^B', '', ''],
+		['i', '', ''],
+	],
+	write_to_file=True
 )
 
 csv2.serialize(
-        [
-                ['', 'A', 'a'],
-                ['A', '', ''],
-                ['a', '', ''],
-        ],
-        write_to_file=True
+	[
+		['', 'A', 'a'],
+		['A', '', ''],
+		['a', '', ''],
+	],
+	write_to_file=True
 )
 
 punnettblood = PunnettSquare('PunnettSquareABO.csv')
@@ -367,34 +367,34 @@ punnettblood.cross()
 
 # Count each genotype
 punnett.genotype_ratio(
-        print_result=True
+	print_result=True
 )
 punnettblood.genotype_ratio(
-        print_result=True
+	print_result=True
 )
 
 # Count each phenotype
 # ABO type table is a special case
 punnettblood.phenotype_ratio(
-        dominant=None,
-        recessive=None,
-        bloodtype=True,
-        print_result=True
+	dominant=None,
+	recessive=None,
+	bloodtype=True,
+	print_result=True
 )
 punnett.phenotype_ratio(
-        dominant={'A': 'Tall'},
-        recessive={'a': 'Short'},
-        print_result=True
+	dominant={'A': 'Tall'},
+	recessive={'a': 'Short'},
+	print_result=True
 )
 
 # Calculate the probability of a specific genotype
 punnettblood.probability(
-        'I^Ai',
-        print_result=True
+	'I^Ai',
+	print_result=True
 )
 punnett.probability(
-        'Aa',
-        print_result=True
+	'Aa',
+	print_result=True
 )
 """
 Output:
@@ -761,16 +761,6 @@ print(full_adder(1, 1, 1))
 
 • They can be used to create flickering, delayed, and pulsed binary signals.
 
-```flick(digits, binary=False, print_result=False)```
-```python
-from scimatic import flick
-
-flick([True, False, True, True], print_result=True)
-
-# Output: [False, True, False, False]
-```
-• Note: The function processes the supplied signal and produces a flickering signal.
-
 ```delay(digits, duration, binary=False, print_result=False)```
 ```python
 from scimatic.c_engineering.signals import delay
@@ -1057,7 +1047,7 @@ fresh_convert_curr(1, 'USD', 'PHP', print_result=True) # The result will store i
 from scimatic.utils.conversion.currency import cache_convert_curr
 
 for _ in range(3):
-                cache_convert_curr(1, 'USD', 'PHP', print_result=True)
+		cache_convert_curr(1, 'USD', 'PHP', print_result=True)
 
 # Output: 1USD -> <current exchange rate>PHP
 # Bottom line: This function sacrifices the offline features fresh_convert_curr has for speed via caching the result.
@@ -1084,19 +1074,19 @@ from scimatic.utils.csv import CSV
 csv = CSV('example.csv')
 
 csv.serialize(
-                [
-                                [
-                                                '1',
-                                                '2',
-                                                '3'
-                                ], [
-                                                'x',
-                                                'y',
-                                                'z'
-                                ]
-                ],
-                write_to_file=True,
-                print_result=True
+		[
+				[
+						'1',
+						'2',
+						'3'
+				], [
+						'x',
+						'y',
+						'z'
+				]
+		],
+		write_to_file=True,
+		print_result=True
 )
 
 # Output: 1,2,3\nx,y,z\n
@@ -1123,8 +1113,8 @@ csv = CSV('example.csv')
 csv.read(print_result=True)
 
 # Output: 
-#                1,2,3
-#                x,y,z
+#		1,2,3
+#		x,y,z
 ```
 
 ```write(text)```
@@ -1171,8 +1161,8 @@ csv = CSV('example.csv')
 new = csv.wread('4,5,6\na,b,c', print_result=True)
 
 # Output:
-#                4,5,6
-#                a,b,c
+#		4,5,6
+#		a,b,c
 # Background Output: The function wread first rewrites the old contents then returns the new contents.
 ```
 
@@ -1223,8 +1213,8 @@ csv = CSV('example.csv')
 csv.add_column([['1', '2', '3']])
 
 # Output: Column 1 will be added at the last column.
-#                                                                                                                                2
-#                                                                                                                                3
+#																2
+#																3
 # Bottom line: The given matrix must be a Matrix Transpose:
 ```
 
@@ -1236,8 +1226,8 @@ For example:
 
 ```python
 [
-        ['a', 'b', 'c'],
-        ['1', '2', '3']
+	['a', 'b', 'c'],
+	['1', '2', '3']
 ]
 ```
 represents two columns:
@@ -1283,4 +1273,168 @@ csv.delete_cell((0, 0))
 ,b,c
 d,e,f
 '''
+```
+
+### cache.py
+- `Cache`
+
+- The `Cache` class provides a caching system for SciMatic that stores function results and reuses them when the same function is called with the same arguments.
+
+- Caching helps reduce redundant computations, improve performance, and avoid repeatedly performing expensive operations.
+
+#### ✨ Features
+
+* 🗃️ Persistent result caching
+* ⚡ Automatic cache lookup and reuse
+* 🎯 Function argument-based cache keys
+* ⏳ Time-to-live (TTL) expiration
+* 🐍 Python decorator support
+* 💾 SQLite (`.db`) and JSON (`.json`) storage formats
+* 🛠️ Configurable cache file location
+
+#### 📦 Supported Formats
+
+| Extension    | Storage format    |
+| ------------ | ----------------- |
+| `.db`        | SQLite database   |
+| `.json`      | JSON file         |
+| No extension | Defaults to `.db` |
+
+#### 🚀 Basic Usage
+
+```python
+from scimatic import Cache
+
+cache = Cache("example.db")
+```
+
+- The `Cache` instance manages the stored results used by decorated functions.
+
+#### Using the Cache Decorator
+
+```python
+from scimatic import Cache
+import time
+
+cache = Cache("example.db")
+
+@cache.cache
+def expensive_calculation(a, b):
+    time.sleep(2)
+    return a + b
+
+print(expensive_calculation(10, 20))
+print(expensive_calculation(10, 20))
+```
+
+The first call computes the result and stores it. A subsequent call with the same arguments can return the cached result without repeating the calculation, provided the entry remains valid.
+
+**Example output:**
+
+```text
+30
+30
+```
+
+The second call should be faster because it can reuse the cached result.
+
+#### ⏳ Time-to-Live (TTL)
+
+TTL determines how long a cached result remains valid.
+
+```python
+@cache.cache(ttl=60)
+def calculate(a, b):
+    return a + b
+```
+
+In this example, the cached result has a TTL of 60 seconds.
+
+After the entry expires, the next call should recompute the result and refresh the cache according to the implementation's expiration policy.
+
+#### 🎯 Argument-Based Caching
+
+Cache entries are associated with the function and its arguments.
+
+```python
+@cache.cache
+def multiply(a, b):
+    return a * b
+
+multiply(5, 5)  # Computes and caches 25
+multiply(5, 5)  # Reuses the cached result
+multiply(5, 6)  # Computes a different result
+```
+
+Different arguments produce different cache entries.
+
+Keyword arguments should also be considered when identifying a cached call.
+
+#### 📁 Storage Location
+
+When a cache filename is provided, the cache uses the specified file location.
+
+If the implementation's default path behavior is used, the cache may be placed in the user's Downloads directory, depending on the operating system.
+
+#### ⚠️ Important Considerations
+
+* Cached results can become stale when external data changes.
+* Choose a TTL appropriate for the function being cached.
+* Functions with side effects should be used carefully with result caching.
+* Persistent caching requires results and arguments to be serializable by the selected backend.
+* Avoid storing secrets or sensitive data in cache files without appropriate safeguards.
+* SQLite and JSON have different performance and concurrency characteristics.
+
+#### 🛠️ Error Handling
+
+SciMatic may raise an exception when an unsupported file extension or invalid cache configuration is provided.
+
+For error codes and troubleshooting instructions, consult the [SciMatic_Errors](https://github.com/bingchiliingsacker-dot/SciMatic_Errors) repository.
+
+#### 📚 Summary
+
+The `Cache` class is intended to make function-result caching convenient through a reusable interface and a decorator-based workflow. It supports persistent storage, argument-aware lookups, and expiration through TTL.
+
+### operations.py
+- ```diff(*args, print_result=False)```
+```python
+from scimatic.utils.operations import diff
+
+diff(3, 1, 1, print_result=True)
+# Output: 1
+```
+
+- ```prod(*args, print_result=False)```
+```python
+from scimatic.utils.operations import prod
+
+prod(3, 1, 1, print_result=True)
+
+# Output: 3
+```
+
+- ```truediv(*args, print_result=False)```
+```python
+from scimatic.utils.operations import truediv
+
+truediv(3, 1, 1, print_result=True)
+
+# Output: 3
+```
+- ```floordiv(*args, print_result=False)```
+```python
+from scimatic.utils.operations import floordiv
+
+floordiv(3, 1, 1, print_result=True)
+
+Output: 3
+```
+
+- ```modulo(*args, print_result=False)```
+```python
+from scimatic.utils.operations import modulo
+
+modulo(3, 1, 1, print_result=True)
+
+# Output: 0
 ```
